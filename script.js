@@ -1,4 +1,4 @@
-// Produtos de exemplo (você pode depois puxar de um back-end ou JSON)
+// Produtos de exemplo
 const products = [
   {
     id: 1,
@@ -270,7 +270,7 @@ function changeCartQty(id, action) {
   updateCartUI();
 }
 
-// Eventos
+// Eventos principais
 searchInput.addEventListener("input", applySearchAndSort);
 sortSelect.addEventListener("change", applySearchAndSort);
 
@@ -297,19 +297,49 @@ startCheckout.addEventListener("click", () => {
   checkoutForm.style.display = "block";
 });
 
+// FINALIZAR PEDIDO VIA WHATSAPP
 finishOrder.addEventListener("click", () => {
-  if (
-    !document.getElementById("nameInput").value ||
-    !document.getElementById("whatsInput").value ||
-    !document.getElementById("addressInput").value
-  ) {
+  const name = document.getElementById("nameInput").value;
+  const whats = document.getElementById("whatsInput").value;
+  const address = document.getElementById("addressInput").value;
+  const note = document.getElementById("noteInput").value;
+
+  if (!name || !whats || !address) {
     alert("Preencha todos os campos obrigatórios.");
     return;
   }
 
-  alert(
-    "Pedido finalizado (simulação). Aqui você pode integrar com WhatsApp ou pagamento online."
-  );
+  if (cart.length === 0) {
+    alert("Seu carrinho está vazio.");
+    return;
+  }
+
+  const subtotal = cart.reduce((sum, item) => sum + item.price * item.qty, 0);
+
+  let message = `Olá, sou ${name}.\n\nQuero fazer um pedido na ZION Art Sacra:\n\n`;
+  
+  cart.forEach(item => {
+    message += `• ${item.name} (Qtd: ${item.qty}) - R$ ${formatPrice(item.price * item.qty)}\n`;
+  });
+
+  message += `\nSubtotal: R$ ${formatPrice(subtotal)}\n`;
+  message += `\nWhatsApp para contato: ${whats}\n`;
+  message += `\nEndereço:\n${address}\n`;
+
+  if (note) {
+    message += `\nObservações:\n${note}\n`;
+  }
+
+  message += `\nPor favor, me envie as opções de pagamento (Pix / Cartão).`;
+
+  // Coloque seu número aqui (DDI + DDD + número)
+  const phone = "5518988079517"; // exemplo: 5518999999999
+
+  const encoded = encodeURIComponent(message);
+  const url = `https://wa.me/${phone}?text=${encoded}`;
+
+  window.open(url, "_blank");
+
   cart = [];
   updateCartUI();
   checkoutForm.style.display = "none";
